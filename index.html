@@ -29,20 +29,10 @@
             width: fit-content;
         }
         /* スクロールバーのデザイン */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 <script type="importmap">
 {
@@ -135,7 +125,7 @@
                 <div className="bg-white p-6 rounded-[40px] shadow-xl max-w-sm w-full border-4 border-pink-200">
                     <h1 className="text-3xl font-extrabold text-pink-500 mb-1">たしざんかあど②</h1>
                     <h2 className="text-xl font-bold text-orange-400 mb-6">くりあがりのある たしざん</h2>
-                     
+                      
                     <div className="space-y-3 w-full">
                         <button onClick={() => onStart(GameMode.SEQUENTIAL_ASC)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-2xl shadow-md transition active:scale-95 text-lg">
                             じゅんばん (2+9はじまり)
@@ -179,6 +169,7 @@
             </div>
         );
 
+        // --- History Page (Modified with Mode) ---
         const HistoryPage = ({ history, onBack, onDeleteItem, onClearAll }) => {
             const [confirmClear, setConfirmClear] = useState(false);
 
@@ -190,7 +181,6 @@
             const getStamp = (correct, total, wrong) => {
                 const score = total - wrong;
                 const rate = score / total;
-                
                 if (wrong === 0) return '💮';
                 if (rate >= 0.8) return '🎉';
                 return '👍';
@@ -218,12 +208,13 @@
                             </div>
                         ) : (
                             <div className="max-w-md mx-auto space-y-2 pb-20">
+                                {/* ヘッダーを修正：モード列を追加し、ヒント列を削除(タイムに統合) */}
                                 <div className="grid grid-cols-12 gap-2 px-4 text-xs font-bold text-gray-400 mb-1">
                                     <div className="col-span-2 text-center">スタンプ</div>
-                                    <div className="col-span-4">日時</div>
+                                    <div className="col-span-3 text-center">モード</div>
+                                    <div className="col-span-3">日時</div>
                                     <div className="col-span-2 text-center">正答率</div>
                                     <div className="col-span-2 text-center">タイム</div>
-                                    <div className="col-span-2 text-center">ヒント</div>
                                 </div>
                                  
                                 {history.map((item, index) => {
@@ -231,25 +222,39 @@
                                     return (
                                         <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group flex flex-col">
                                             <div className="grid grid-cols-12 gap-2 p-3 items-center">
+                                                {/* スタンプ (2) */}
                                                 <div className="col-span-2 flex justify-center text-2xl">
                                                     {getStamp(item.correct, item.total, item.wrong)}
                                                 </div>
-                                                <div className="col-span-4 flex flex-col justify-center">
-                                                    <div className="text-sm font-bold text-gray-700">{formatDate(item.date).split(' ')[0]}</div>
-                                                    <div className="text-xs text-gray-400">{formatDate(item.date).split(' ')[1]}</div>
+
+                                                {/* モード (3) - 新規追加 */}
+                                                <div className="col-span-3 flex justify-center">
+                                                    <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded-md whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
+                                                        {item.mode || '-'}
+                                                    </span>
                                                 </div>
+
+                                                {/* 日時 (3) */}
+                                                <div className="col-span-3 flex flex-col justify-center">
+                                                    <div className="text-xs font-bold text-gray-700">{formatDate(item.date).split(' ')[0]}</div>
+                                                    <div className="text-[10px] text-gray-400">{formatDate(item.date).split(' ')[1]}</div>
+                                                </div>
+
+                                                {/* 正答率 (2) */}
                                                 <div className="col-span-2 flex justify-center items-center">
                                                     <div className={`font-black text-lg ${acc >= 80 ? 'text-orange-500' : 'text-blue-500'}`}>
                                                         {acc}<span className="text-[10px]">%</span>
                                                     </div>
                                                 </div>
-                                                <div className="col-span-2 flex justify-center text-xs font-bold text-gray-500">
-                                                    {Math.floor(item.timeMs / 1000)}秒
-                                                </div>
-                                                <div className="col-span-2 flex justify-center">
-                                                    <span className={`text-sm ${item.dotsEnabled ? 'text-orange-400' : 'text-gray-300'}`}>
+
+                                                {/* タイム＆ヒント (2) - 統合 */}
+                                                <div className="col-span-2 flex flex-col items-center justify-center">
+                                                    <div className="text-xs font-bold text-gray-500">
+                                                        {Math.floor(item.timeMs / 1000)}秒
+                                                    </div>
+                                                    <div className={`text-[10px] leading-none mt-1 ${item.dotsEnabled ? 'text-orange-400' : 'text-gray-200'}`}>
                                                         {item.dotsEnabled ? '●' : '○'}
-                                                    </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             {item.wrongProblems && item.wrongProblems.length > 0 && (
@@ -427,6 +432,7 @@
                             <div className="flex justify-between border-b pb-1"><span>タイム</span><span className="text-blue-600">{timeStr}</span></div>
                             <div className="flex justify-between border-b pb-1 pt-1"><span>正解スコア</span><span className="text-xl text-orange-500">{finalScore} / {total}</span></div>
                             <div className="flex justify-between text-xs text-gray-400"><span>まちがい: {wrong}回</span><span>正答率: {accuracy}%</span></div>
+                            <div className="flex justify-between text-xs text-gray-400 border-t pt-1 mt-1"><span>モード</span><span className="text-blue-500">{mode}</span></div>
                         </div>
                         {wrongProblems.length > 0 && (
                             <div className="mb-6">
@@ -459,7 +465,7 @@
             const [history, setHistory] = useState([]);
             const [lastResult, setLastResult] = useState(null);
 
-            // 保存キーを「たしざん」用に変更
+            // 保存キーを「たしざん」用に変更（元コードのまま維持）
             const STORAGE_KEY = 'math_addition_history_v2';
 
             useEffect(() => {
